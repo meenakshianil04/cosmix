@@ -84,18 +84,14 @@ body {
 </head>
 <body>
 <h1>🚀 Cosmix </h1>
-<h3>Play and learn about SPACE and NASA !</h3>
+<h3>Play and learn about space and NASA!</h3>
 <div id="game-board"></div>
-<!-- Level display on top-right -->
-<div id="level-display">Level: 1</div>
 
-<!-- Fact Popup -->
 <div id="fact-popup">
-  <img id="popup-img" src="" alt="NASA Fact">
+  <img id="popup-img" src="" alt="NASA">
   <p id="popup-fact"></p>
-  <button id="next-level-btn" onclick="nextLevel()">Next Level</button>
+  <button onclick="closePopup()">Close</button>
 </div>
-
 
 <script>
 const levelLayouts = [
@@ -141,26 +137,44 @@ function startGame() {
   selectedCards = [];
   matched = 0;
 
-  let pairs = level === 1 ? 4 : (level === 2 ? 6 : 8); // number of pairs
-  let chosen = images.slice((level-1)*pairs, (level-1)*pairs + pairs);
-  let cards = [...chosen, ...chosen].sort(() => 0.5 - Math.random());
+  // Correct images for each level
+  let levelImages = [];
+  if(level === 1){
+    levelImages = images.slice(0,4);   // 4 pairs
+  } else if(level === 2){
+    levelImages = images.slice(4,10);  // 6 pairs
+  } else if(level === 3){
+    levelImages = images.slice(10,18); // 8 pairs
+  }
 
-  // Set fixed grid layout for each level
+  // Double the images and shuffle
+  let cards = [...levelImages, ...levelImages].sort(() => Math.random() - 0.5);
+
+  // Set grid layout
   const { rows, cols } = levelLayouts[level-1];
   board.style.gridTemplateColumns = `repeat(${cols}, 150px)`;
   board.style.gridTemplateRows = `repeat(${rows}, 150px)`;
 
+  // Create cards
   cards.forEach(img => {
     const card = document.createElement("div");
     card.classList.add("card");
     card.dataset.image = img;
+
     const cardImg = document.createElement("img");
     cardImg.src = img;
     card.appendChild(cardImg);
+
     card.addEventListener("click", flipCard);
     board.appendChild(card);
   });
+
+  // Update level display
+  if (document.getElementById('level-display')) {
+    document.getElementById('level-display').innerText = 'Level: ' + level;
+  }
 }
+
 
 function flipCard() {
   if (this.classList.contains("flipped") || selectedCards.length === 2) return;
