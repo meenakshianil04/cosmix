@@ -1,114 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NASA Memory Match Game</title>
+  <meta charset="UTF-8">
+  <title>Cosmix — Memory Match</title>
+ <style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at top, #000010, #000);
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
 
-  <style>
-    body {
-      background: radial-gradient(circle at top, #0a0f1f, #000);
-      color: #fff;
-      font-family: "Poppins", sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
+  h1 {
+    margin-top: 20px;
+    font-size: 2.2em;
+    color: #00bfff;
+  }
 
-    h1 {
-      margin: 20px 0;
-      color: #ffd166;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px #ffd166;
-    }
+  h3 {
+    color: #aaa;
+    margin-bottom: 20px;
+  }
 
+  #game-board {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    gap: 15px;
+    margin: 0 auto;
+    max-width: 900px;
+    padding: 20px;
+  }
+
+  /* Make sure cards form perfect squares and center nicely per level */
+  @media (min-width: 0px) {
     #game-board {
-      display: grid;
-      grid-template-columns: repeat(6, 120px);
-      grid-gap: 15px;
-      justify-content: center;
-      margin: 20px auto;
-      max-width: 800px;
+      grid-template-columns: repeat(4, 150px);
     }
+  }
 
-    .card {
-      width: 120px;
-      height: 120px;
-      perspective: 1000px;
-      cursor: pointer;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  @media (min-width: 700px) {
+    #game-board {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
+  }
 
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
+  .card {
+    width: 150px;
+    height: 150px;
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
 
-    .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
+  .card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #00bfff;
+  }
 
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 15px;
-      backface-visibility: hidden;
-    }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
 
-    .card-front {
-      background: #111;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: #ffd166;
-      box-shadow: 0 0 10px #ffd166;
-    }
+  .flipped img {
+    display: block;
+  }
 
-    .card-back {
-      transform: rotateY(180deg);
-      overflow: hidden;
-    }
+  /* Popup styles */
+  #fact-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 20, 0.95);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 500px;
+    z-index: 999;
+    box-shadow: 0 0 20px #00bfff;
+  }
 
-    .card-back img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 15px;
-    }
+  #fact-popup img {
+    width: 400px;
+    max-width: 100%;
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
 
-    #fact-box {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 30px auto;
-      width: 80%;
-      max-width: 700px;
-      color: #ffd166;
-      line-height: 1.5;
-      font-size: 1rem;
-      box-shadow: 0 0 15px rgba(255, 209, 102, 0.3);
-      min-height: 50px;
-    }
+  #fact-popup button {
+    background: #00bfff;
+    border: none;
+    padding: 8px 16px;
+    margin-top: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: background 0.2s ease;
+  }
 
-    #level {
-      font-size: 1.2rem;
-      margin: 10px;
-      color: #90e0ef;
-    }
-  </style>
+  #fact-popup button:hover {
+    background: #0088cc;
+  }
+</style>
+
 </head>
-
 <body>
-  <h1>🚀 NASA Space Memory Game 🌌</h1>
-  <div id="level">Level: 1</div>
+  <h1>🚀 Cosmix — Memory Match</h1>
+  <h3>Find the NASA pairs and unlock cool facts!</h3>
   <div id="game-board"></div>
-  <div id="fact-box">Match cards to reveal amazing NASA facts!</div>
+
+  <!-- Popup -->
+  <div id="fact-popup">
+    <img id="popup-img" src="" alt="NASA">
+    <p id="popup-fact"></p>
+    <button onclick="closePopup()">Close</button>
+  </div>
 
   <script>
     const images = [
@@ -134,84 +155,94 @@
 
     const facts = {
       'headoftherocket.jpg': "Rocket Lab launched the first of two 6U CubeSats for NASA’s PREFIRE mission on May 25, 2024, from Launch Complex 1 in Mahia, New Zealand.",
-      'cosmix1.jpg': "NASA's SpaceX IMAP Liftoff: The missions will each focus on different effects of the solar wind and space weather from their origins at the Sun to their farthest reaches at the edge of our solar system.",
-      'cosmix2.jpg': "NASA Terrestrial Planet Finder will use multiple telescopes working together to find planets that may have the right chemistry to sustain life.",
-      'cosmix3.jpg': "The Andromeda galaxy is the most massive in the local group of galaxies that includes our Milky Way.",
-      'cosmix4.jpg': "While photographing Mars, NASA’s Hubble Space Telescope captured a cameo appearance of the tiny moon Phobos.",
-      'cosmix5.jpg': "A dying star’s final moments are captured in this image from the NASA/ESA Hubble Space Telescope.",
-      'cosmix6.jpg': "Wireless crop water monitoring project: NASA uses soil moisture probes to improve satellite estimates of crop water demand.",
-      'kalpana.jpg': "Kalpana Chawla was the first Indian-born woman in space. She flew on the Space Shuttle Columbia and inspired millions.",
-      'nasa.jpg': "NASA was founded in 1958 to explore space and study Earth. Its missions include sending astronauts to the Moon and exploring Mars.",
-      'neil.jpg': "Neil Armstrong was the first person to walk on the Moon on July 20, 1969, during NASA’s Apollo 11 mission.",
-      'planets.jpg': "This artist concept shows the smallest star known to host a planet, VB 10b, discovered using astrometry.",
-      'rocketfire.jpg': "On May 8, 2024, Rocket Lab launched two NASA TROPICS CubeSats to study tropical cyclones using microwave frequencies.",
-      'saturn.jpg': "Saturn is famous for its beautiful rings made of ice and rock. It would float because it’s less dense than water!",
-      'solarsystem.jpg': "Our solar system features eight planets shown in this artist’s diagram — not to scale!",
-      'rocket.jpg': "Rocket Lab launched the first of two 6U CubeSats for NASA’s PREFIRE mission on May 25, 2024.",
-      'astronut.jpg': "Astronaut John H. Glenn sits in a car in front of the Mercury Mission Control building before his Friendship 7 mission.",
-      'mars.jpg': "Mars is known as the Red Planet because of its reddish appearance caused by iron oxide on its surface.",
-      'satelite.jpg': "NASA uses satellites to study Earth and space — tracking weather, climate, and capturing stunning images."
+      'cosmix1.jpg': "NASA's SpaceX IMAP Liftoff focuses on how the solar wind and space weather affect our solar system, from the Sun’s surface to its edge billions of miles away.",
+      'cosmix2.jpg': "NASA’s Terrestrial Planet Finder will use multiple telescopes to take portraits of stars and their orbiting planets and identify worlds that could support life.",
+      'cosmix3.jpg': "The Andromeda Galaxy is the most massive galaxy in the Local Group, which also includes our Milky Way.",
+      'cosmix4.jpg': "While photographing Mars, NASA’s Hubble Space Telescope captured a cameo of the tiny moon Phobos orbiting the Red Planet.",
+      'cosmix5.jpg': "A dying star’s final moments were captured in this image from NASA’s Hubble Space Telescope.",
+      'cosmix6.jpg': "NASA scientists monitor crop water using satellites and soil sensors to better understand agricultural water demand from space.",
+      'kalpana.jpg': "Kalpana Chawla was the first Indian-born woman in space, inspiring millions through her bravery and dedication to exploration.",
+      'nasa.jpg': "Founded in 1958, NASA explores space and Earth — sending astronauts to the Moon, rovers to Mars, and telescopes deep into the cosmos.",
+      'neil.jpg': "Neil Armstrong was the first person to walk on the Moon in 1969. His words: 'That’s one small step for man, one giant leap for mankind.'",
+      'planets.jpg': "VB 10b is the smallest known star hosting a planet, discovered using astrometry to detect a star’s subtle wobble in the sky.",
+      'rocketfire.jpg': "In 2024, a Rocket Lab Electron rocket launched two NASA CubeSats to study tropical cyclones using microwave frequencies.",
+      'saturn.jpg': "Saturn’s rings are made of ice and rock. Amazingly, Saturn would float in water because it’s less dense than liquid!",
+      'solarsystem.jpg': "This artistic diagram shows all eight planets in our solar system, though much closer together than in reality.",
+      'rocket.jpg': "NASA and Rocket Lab continue missions to study Earth's climate with advanced small satellite technology.",
+      'mars.jpg': "Mars, the Red Planet, gets its color from iron oxide dust. NASA’s Perseverance rover explores its ancient lakebeds for signs of life.",
+      'satelite.jpg': "NASA satellites observe weather, monitor climate change, and capture incredible images of planets and stars.",
+      'astronut.jpg': "Astronaut John Glenn became the first American to orbit Earth in 1962 aboard Friendship 7."
     };
 
     let level = 1;
-    let flippedCards = [];
-    let matchedCount = 0;
+    let selectedCards = [];
+    let matched = 0;
 
     function startGame() {
       const board = document.getElementById("game-board");
       board.innerHTML = "";
-      const levelImages = images.slice(0, level * 6); // 6 pairs per level
-      const cards = [...levelImages, ...levelImages].sort(() => Math.random() - 0.5);
+      selectedCards = [];
+      matched = 0;
+
+      let pairs = level === 1 ? 4 : (level === 2 ? 6 : 8);
+      let chosen = images.slice((level - 1) * pairs, (level - 1) * pairs + pairs);
+      let cards = [...chosen, ...chosen].sort(() => 0.5 - Math.random());
 
       cards.forEach(img => {
         const card = document.createElement("div");
         card.classList.add("card");
-        card.innerHTML = `
-          <div class="card-inner">
-            <div class="card-front">?</div>
-            <div class="card-back"><img src="images/${img}" alt="image"></div>
-          </div>
-        `;
-        card.addEventListener("click", () => flipCard(card, img));
+        card.dataset.image = img;
+
+        const cardImg = document.createElement("img");
+        cardImg.src = img;
+        card.appendChild(cardImg);
+
+        card.addEventListener("click", flipCard);
         board.appendChild(card);
       });
     }
 
-    function flipCard(card, img) {
-      if (flippedCards.length < 2 && !card.classList.contains("flipped")) {
-        card.classList.add("flipped");
-        flippedCards.push({ card, img });
+    function flipCard() {
+      if (this.classList.contains("flipped") || selectedCards.length === 2) return;
 
-        if (flippedCards.length === 2) {
-          setTimeout(checkMatch, 800);
+      this.classList.add("flipped");
+      selectedCards.push(this);
+
+      if (selectedCards.length === 2) {
+        const [c1, c2] = selectedCards;
+        if (c1.dataset.image === c2.dataset.image) {
+          matched++;
+          showPopup(c1.dataset.image);
+          selectedCards = [];
+          if (matched === (level === 1 ? 4 : (level === 2 ? 6 : 8))) {
+            setTimeout(() => {
+              if (level < 3) {
+                alert(`✅ Level ${level} complete! Moving to next level...`);
+                level++;
+                startGame();
+              } else {
+                alert("🎉 Congratulations! You finished all levels!");
+              }
+            }, 700);
+          }
+        } else {
+          setTimeout(() => {
+            c1.classList.remove("flipped");
+            c2.classList.remove("flipped");
+            selectedCards = [];
+          }, 800);
         }
       }
     }
 
-    function checkMatch() {
-      const [first, second] = flippedCards;
-      const factBox = document.getElementById("fact-box");
+    function showPopup(img) {
+      document.getElementById("popup-img").src = img;
+      document.getElementById("popup-fact").innerText = facts[img];
+      document.getElementById("fact-popup").style.display = "block";
+    }
 
-      if (first.img === second.img) {
-        matchedCount++;
-        factBox.textContent = facts[first.img];
-        flippedCards = [];
-
-        if (matchedCount === images.slice(0, level * 6).length) {
-          if (level < 3) {
-            level++;
-            matchedCount = 0;
-            document.getElementById("level").textContent = `Level: ${level}`;
-            setTimeout(startGame, 1500);
-          } else {
-            factBox.textContent = "🎉 Congratulations! You completed all levels!";
-          }
-        }
-      } else {
-        first.card.classList.remove("flipped");
-        second.card.classList.remove("flipped");
-        flippedCards = [];
-      }
+    function closePopup() {
+      document.getElementById("fact-popup").style.display = "none";
     }
 
     startGame();
