@@ -1,86 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cosmix — Memory Match</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NASA Memory Match Game</title>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: black;
-      color: white;
+      background: radial-gradient(circle at top, #0a0f1f, #000);
+      color: #fff;
+      font-family: "Poppins", sans-serif;
       text-align: center;
+      margin: 0;
+      padding: 0;
     }
+
+    h1 {
+      margin: 20px 0;
+      color: #ffd166;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #ffd166;
+    }
+
     #game-board {
       display: grid;
-      grid-template-columns: repeat(auto-fill, 150px);
-      gap: 12px;
+      grid-template-columns: repeat(6, 120px);
+      grid-gap: 15px;
       justify-content: center;
-      margin-top: 20px;
+      margin: 20px auto;
+      max-width: 800px;
     }
+
     .card {
-      width: 150px;
-      height: 150px;
-      background: gray;
-      border-radius: 10px;
+      width: 120px;
+      height: 120px;
+      perspective: 1000px;
       cursor: pointer;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 15px;
+      backface-visibility: hidden;
+    }
+
+    .card-front {
+      background: #111;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      position: relative;
+      font-size: 2rem;
+      color: #ffd166;
+      box-shadow: 0 0 10px #ffd166;
     }
-    .card img {
+
+    .card-back {
+      transform: rotateY(180deg);
+      overflow: hidden;
+    }
+
+    .card-back img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: none; /* hidden until flipped */
-    }
-    .flipped img {
-      display: block;
+      border-radius: 15px;
     }
 
-    /* Popup styles */
-    #fact-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.9);
-      padding: 20px;
+    #fact-box {
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      text-align: center;
-      max-width: 500px;
-      z-index: 999;
+      padding: 20px;
+      margin: 30px auto;
+      width: 80%;
+      max-width: 700px;
+      color: #ffd166;
+      line-height: 1.5;
+      font-size: 1rem;
+      box-shadow: 0 0 15px rgba(255, 209, 102, 0.3);
+      min-height: 50px;
     }
-    #fact-popup img {
-      width: 400px;
-      max-width: 100%;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-    #fact-popup button {
-      background: #ff9800;
-      border: none;
-      padding: 8px 16px;
-      margin-top: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
+
+    #level {
+      font-size: 1.2rem;
+      margin: 10px;
+      color: #90e0ef;
     }
   </style>
 </head>
-<body>
-  <h1>🚀 Cosmix — Memory Match</h1>
-  <h3>Find the NASA pairs and unlock facts!</h3>
-  <div id="game-board"></div>
 
-  <!-- Popup -->
-  <div id="fact-popup">
-    <img id="popup-img" src="" alt="NASA">
-    <p id="popup-fact"></p>
-    <button onclick="closePopup()">Close</button>
-  </div>
+<body>
+  <h1>🚀 NASA Space Memory Game 🌌</h1>
+  <div id="level">Level: 1</div>
+  <div id="game-board"></div>
+  <div id="fact-box">Match cards to reveal amazing NASA facts!</div>
 
   <script>
     const images = [
@@ -104,95 +132,86 @@
       'astronut.jpg'
     ];
 
-    const facts = {'headoftherocket.jpg' : "Rocket Lab launched the first of two 6U CubeSats for NASA’s PREFIRE mission on May 25, 2024, from Launch Complex 1 in Mahia, New Zealand",
-      'cosmix1.jpg': "NASA's SpaceX IMAP Liftoff ,The missions will each focus on different effects of the solar wind  the continuous stream of particles emitted by the Sun and space weather , the changing conditions in space driven by the Sun ,from their origins at the Sun to their farthest reaches billions of miles away at the edge of our solar system.",
-      'cosmix2.jpg': 'NASA Terrestrial Planet Finder will use multiple telescopes working together to take family portraits of stars and their orbiting planets and determine which planets may have the right chemistry to sustain life.',
-      'cosmix3.jpg' : 'The Andromeda galaxy is the most massive in the local group of galaxies that includes our Milky Way.',
-      'cosmix4.jpg': 'While photographing Mars, NASA’s Hubble Space Telescope captured a cameo appearance of the tiny moon Phobos on its trek around the Red Planet. ',
-      'cosmix5.jpg': 'A dying star’s final moments are captured in this image from the NASA/ESA Hubble Space Telescope.',
-      'cosmix6.jpg':'Wireless crop water monitoring project: Dr. Chris Lund, a scientist who is working on the NASA project at NASA Ames installs soil mositure probes in an agricultural field. The soil mositure measurements will be used to assist in interpretation of the satelite estimates of crop water deamand.',
-      'kalpana.jpg' : 'Kalpana Chawla was the first Indian-born woman in space. She flew on the Space Shuttle Columbia and inspired millions with her courage and dedication to space exploration',
-      'nasa.jpg': 'NASA was founded in 1958 to explore space and study Earth. Its missions include sending astronauts to the Moon, exploring Mars with rovers, and studying the universe with telescopes like Hubble.',
-      'neil.jpg' : 'Neil Armstrong was the first person to walk on the Moon on July 20, 1969, during NASA’s Apollo 11 mission. His famous words were: ‘That’s one small step for [a] man, one giant leap for mankind.',
-      'planets.jpg' : 'This artist concept shows the smallest star known to host a planet. The planet, called VB 10b, was discovered using astrometry, a method in which the wobble induced by a planet on its star is measured precisely on the sky.',
-      'rocketfire.jpg' : "On May 8, 2024, a Rocket Lab Electron rocket launched two NASA TROPICS CubeSats from Māhia, New Zealand, to study tropical cyclones by measuring temperature, precipitation, water vapor, and clouds using microwave frequencies.",
-      'saturn.jpg' : 'Saturn is famous for its beautiful rings, which are made of ice and rock. If you could put Saturn in a giant bathtub, it would float because it’s less dense than water!',
-      'solarsystem.jpg' : "Our solar system features eight planets, seen in this artist’s diagram. This representation is intentionally fanciful, as the planets are depicted far closer together than they really are.",
-      'rocket.jpg' : 'Rocket Lab launched the first of two 6U CubeSats for NASA’s PREFIRE mission on May 25, 2024, from Launch Complex 1 in Mahia, New Zealand',
-      'astronut.jpg' :  "Astronaut John H. Glenn sits in a car in front of the east side of the Mercury Mission Control building. Glenn was the pilot for the Mercury-Atlas 6 mission aboard Friendship 7, which launched Feb. 20, 1962.",
-      'mars.jpg' : "“Mars is known as the Red Planet because of its reddish appearance caused by iron oxide (rust) on its surface. NASA’s Perseverance rover is exploring the Jezero Crater for signs of ancient life.",
-      'satelite.jpg' : 'NASA uses satellites to study Earth and space. Some satellites track weather, monitor climate change, and take amazing pictures of planets and stars'
-        };
+    const facts = {
+      'headoftherocket.jpg': "Rocket Lab launched the first of two 6U CubeSats for NASA’s PREFIRE mission on May 25, 2024, from Launch Complex 1 in Mahia, New Zealand.",
+      'cosmix1.jpg': "NASA's SpaceX IMAP Liftoff: The missions will each focus on different effects of the solar wind and space weather from their origins at the Sun to their farthest reaches at the edge of our solar system.",
+      'cosmix2.jpg': "NASA Terrestrial Planet Finder will use multiple telescopes working together to find planets that may have the right chemistry to sustain life.",
+      'cosmix3.jpg': "The Andromeda galaxy is the most massive in the local group of galaxies that includes our Milky Way.",
+      'cosmix4.jpg': "While photographing Mars, NASA’s Hubble Space Telescope captured a cameo appearance of the tiny moon Phobos.",
+      'cosmix5.jpg': "A dying star’s final moments are captured in this image from the NASA/ESA Hubble Space Telescope.",
+      'cosmix6.jpg': "Wireless crop water monitoring project: NASA uses soil moisture probes to improve satellite estimates of crop water demand.",
+      'kalpana.jpg': "Kalpana Chawla was the first Indian-born woman in space. She flew on the Space Shuttle Columbia and inspired millions.",
+      'nasa.jpg': "NASA was founded in 1958 to explore space and study Earth. Its missions include sending astronauts to the Moon and exploring Mars.",
+      'neil.jpg': "Neil Armstrong was the first person to walk on the Moon on July 20, 1969, during NASA’s Apollo 11 mission.",
+      'planets.jpg': "This artist concept shows the smallest star known to host a planet, VB 10b, discovered using astrometry.",
+      'rocketfire.jpg': "On May 8, 2024, Rocket Lab launched two NASA TROPICS CubeSats to study tropical cyclones using microwave frequencies.",
+      'saturn.jpg': "Saturn is famous for its beautiful rings made of ice and rock. It would float because it’s less dense than water!",
+      'solarsystem.jpg': "Our solar system features eight planets shown in this artist’s diagram — not to scale!",
+      'rocket.jpg': "Rocket Lab launched the first of two 6U CubeSats for NASA’s PREFIRE mission on May 25, 2024.",
+      'astronut.jpg': "Astronaut John H. Glenn sits in a car in front of the Mercury Mission Control building before his Friendship 7 mission.",
+      'mars.jpg': "Mars is known as the Red Planet because of its reddish appearance caused by iron oxide on its surface.",
+      'satelite.jpg': "NASA uses satellites to study Earth and space — tracking weather, climate, and capturing stunning images."
+    };
 
     let level = 1;
-    let selectedCards = [];
-    let matched = 0;
+    let flippedCards = [];
+    let matchedCount = 0;
 
     function startGame() {
       const board = document.getElementById("game-board");
       board.innerHTML = "";
-      selectedCards = [];
-      matched = 0;
-
-      let pairs = level === 1 ? 4 : (level === 2 ? 6 : 8);
-      let chosen = images.slice((level-1)*pairs, (level-1)*pairs + pairs);
-      let cards = [...chosen, ...chosen].sort(() => 0.5 - Math.random());
+      const levelImages = images.slice(0, level * 6); // 6 pairs per level
+      const cards = [...levelImages, ...levelImages].sort(() => Math.random() - 0.5);
 
       cards.forEach(img => {
         const card = document.createElement("div");
         card.classList.add("card");
-        card.dataset.image = img;
-
-        const cardImg = document.createElement("img");
-        cardImg.src = img;
-        card.appendChild(cardImg);
-
-        card.addEventListener("click", flipCard);
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-front">?</div>
+            <div class="card-back"><img src="images/${img}" alt="image"></div>
+          </div>
+        `;
+        card.addEventListener("click", () => flipCard(card, img));
         board.appendChild(card);
       });
     }
 
-    function flipCard() {
-      if (this.classList.contains("flipped") || selectedCards.length === 2) return;
+    function flipCard(card, img) {
+      if (flippedCards.length < 2 && !card.classList.contains("flipped")) {
+        card.classList.add("flipped");
+        flippedCards.push({ card, img });
 
-      this.classList.add("flipped");
-      selectedCards.push(this);
-
-      if (selectedCards.length === 2) {
-        const [c1, c2] = selectedCards;
-        if (c1.dataset.image === c2.dataset.image) {
-          matched++;
-          showPopup(c1.dataset.image); // Show fact + large image
-          selectedCards = [];
-          if (matched === (level === 1 ? 4 : (level === 2 ? 6 : 8))) {
-            setTimeout(() => {
-              if (level < 3) {
-                alert("Level " + level + " complete! 🚀 Moving to next level...");
-                level++;
-                startGame();
-              } else {
-                alert("🎉 Congratulations! You finished all levels!");
-              }
-            }, 500);
-          }
-        } else {
-          setTimeout(() => {
-            c1.classList.remove("flipped");
-            c2.classList.remove("flipped");
-            selectedCards = [];
-          }, 800);
+        if (flippedCards.length === 2) {
+          setTimeout(checkMatch, 800);
         }
       }
     }
 
-    function showPopup(img) {
-      document.getElementById("popup-img").src = img;
-      document.getElementById("popup-fact").innerText = facts[img];
-      document.getElementById("fact-popup").style.display = "block";
-    }
+    function checkMatch() {
+      const [first, second] = flippedCards;
+      const factBox = document.getElementById("fact-box");
 
-    function closePopup() {
-      document.getElementById("fact-popup").style.display = "none";
+      if (first.img === second.img) {
+        matchedCount++;
+        factBox.textContent = facts[first.img];
+        flippedCards = [];
+
+        if (matchedCount === images.slice(0, level * 6).length) {
+          if (level < 3) {
+            level++;
+            matchedCount = 0;
+            document.getElementById("level").textContent = `Level: ${level}`;
+            setTimeout(startGame, 1500);
+          } else {
+            factBox.textContent = "🎉 Congratulations! You completed all levels!";
+          }
+        }
+      } else {
+        first.card.classList.remove("flipped");
+        second.card.classList.remove("flipped");
+        flippedCards = [];
+      }
     }
 
     startGame();
